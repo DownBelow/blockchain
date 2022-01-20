@@ -13,32 +13,28 @@ contract ABYSS is Context, IERC20, Ownable {
     using SafeMath for uint256;
     using Address for address;
 
-    string private _name = "Abyss Token";
-    string private _symbol = "$ABYSS";
-    uint8 private _decimals = 9;
-
+    // Reflection Tokens
     mapping (address => uint256) private _rOwned;
+    
+    // ERC20 attributes
     mapping (address => uint256) private _tOwned;
     mapping (address => mapping (address => uint256)) private _allowances;
-    
-    mapping (address => bool) private _isExcludedFromFee;
-    mapping (address => bool) private _isExcluded;
+    string private _name = "Abyss Token";
+    string private _symbol = "$ABYSS";
+    uint8 private _decimals = 18;
 
-    // mapping (address => uint256) public claimedRewards;
-    // mapping (uint256 => uint256) public claimedNFTRewards;
-    // mapping (address => bool) public AMMPairs;
-    // mapping (address => bool) public _isExcludedMaxTransactionAmount;
+    mapping (address => bool) private _isExcludedFromFee;
+
+    mapping (address => bool) private _isExcluded;
     address[] private _excluded;
 
-    // address private _presaleAddress;
-    // address payable private _marketingWallet;
-    // address payable private _teamWallet;
-    // address payable private _poolWallet;
-    // address public _hatSwapNFT;
-
     uint256 private constant MAX = ~uint256(0);
-    uint256 private _tTotal = 1000000000 * 10**6 * 10**9;
+    uint256 private initialsupply = 100000000;
+
+    uint256 private _tTotal = initialsupply * 10**_decimals;
     uint256 private _rTotal = (MAX - (MAX % _tTotal));
+
+    // caluculate TransactionFee total
     uint256 private _tFeeTotal;
     
     uint256 public _taxFee = 5;
@@ -47,14 +43,20 @@ contract ABYSS is Context, IERC20, Ownable {
     uint256 public _liquidityFee = 5;
     uint256 private _previousLiquidityFee = _liquidityFee;
 
-    IUniswapV2Router02 public immutable uniswapV2Router;
-    address public immutable uniswapV2Pair;
-
+    //Automated Liquidity Acquisition
     bool inSwapAndLiquify;
     bool public swapAndLiquifyEnabled = true;
 
-    uint256 public _maxTxAmount = 5000000 * 10**6 * 10**9;
-    uint256 private numTokensSellToAddToLiquidity = 500000 * 10**6 * 10**9;
+    //Uniswap Router,Pair for Liquidity
+    IUniswapV2Router02 public immutable uniswapV2Router;
+    address public immutable uniswapV2Pair;
+
+    uint256 public _maxTxAmount = 5000000 * 10**_decimals;
+    /*
+    Limitation token numbers to add Liquidity Pool
+    Will be stored in contract address
+    */
+    uint256 private numTokensSellToAddToLiquidity = 500000 * 10**_decimals;
 
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
     event SwapAndLiquifyEnabledUpdated(bool enabled);
@@ -87,6 +89,7 @@ contract ABYSS is Context, IERC20, Ownable {
         emit Transfer(address(0), _msgSender(), _tTotal);
     }
 
+    //ERC20 method
     function name() public view returns (string memory) {
         return _name;
     }
@@ -146,15 +149,6 @@ contract ABYSS is Context, IERC20, Ownable {
         return _tFeeTotal;
     }
 
-    function deliver(uint256 tAmount) public {
-        address sender = _msgSender();
-        require(!_isExcluded[sender], "Excluded addresses cannot call this function");
-        (uint256 rAmount,,,,,) = _getValues(tAmount);
-        _rOwned[sender] = _rOwned[sender].sub(rAmount);
-        _rTotal = _rTotal.sub(rAmount);
-        _tFeeTotal = _tFeeTotal.add(tAmount);
-    }
-
     function reflectionFromToken(uint256 tAmount, bool deductTransferFee) public view returns(uint256) {
         require(tAmount <= _tTotal, "Amount must be less than supply");
         if (!deductTransferFee) {
@@ -183,7 +177,7 @@ contract ABYSS is Context, IERC20, Ownable {
     }    
 
     function includeInReward(address account) external onlyOwner() {
-        require(_isExcluded[account], "Account is already excluded");
+        require(_isExcluded[account], "Account is not excluded");
         for (uint256 i = 0; i < _excluded.length; i++) {
             if (_excluded[i] == account) {
                 _excluded[i] = _excluded[_excluded.length - 1];
