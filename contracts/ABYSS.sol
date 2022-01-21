@@ -4,13 +4,11 @@ pragma solidity ^0.8.4;
 import "./dependencies/Context.sol";
 import "./dependencies/Ownable.sol";
 import "./dependencies/interface/IERC20.sol";
-import "./dependencies/libraries/SafeMath.sol";
 import "./dependencies/libraries/Address.sol";
 import "./dependencies/interface/IUniswapV2Router02.sol";
 import "./dependencies/interface/IUniswapV2Factory.sol";
 
 contract ABYSS is Context, IERC20, Ownable {
-    // using SafeMath for uint256;
     using Address for address;
 
     // Reflection Tokens
