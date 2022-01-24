@@ -57,6 +57,17 @@ contract ABYSS is Context, IERC20, Ownable {
     */
     uint256 private numTokensSellToAddToLiquidity = 500000 * 10**_decimals;
 
+
+    /* 
+    mapping (address => bool) public AMMPairs;
+
+    address private _presaleAddress;
+    address payable private _marketingWallet;
+    address payable private _teamWallet;
+    address payable private _poolWallet; */
+
+    /////////////////////////////
+
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
     event SwapAndLiquifyEnabledUpdated(bool enabled);
     event SwapAndLiquify(
