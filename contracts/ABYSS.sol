@@ -7,33 +7,32 @@ import "./dependencies/interface/IERC20.sol";
 import "./dependencies/libraries/Address.sol";
 import "./dependencies/interface/IUniswapV2Router02.sol";
 import "./dependencies/interface/IUniswapV2Factory.sol";
+import "./dependencies/interface/botProtect.sol";
 
 contract ABYSS is Context, IERC20, Ownable {
     using Address for address;
 
     // Reflection Tokens
     mapping (address => uint256) private _rOwned;
-    
     // ERC20 attributes
     mapping (address => uint256) private _tOwned;
     mapping (address => mapping (address => uint256)) private _allowances;
-    string private _name = "Abyss Token";
-    string private _symbol = "$ABYSS";
-    uint8 private _decimals = 18;
-
+    
     mapping (address => bool) private _isExcludedFromFee;
-
     mapping (address => bool) private _isExcluded;
     address[] private _excluded;
 
-    uint256 private constant MAX = ~uint256(0);
     uint256 private initialsupply = 100000000;
 
+    uint256 private constant MAX = ~uint256(0);
     uint256 private _tTotal = initialsupply * 10**_decimals;
     uint256 private _rTotal = (MAX - (MAX % _tTotal));
-
     // caluculate TransactionFee total
     uint256 private _tFeeTotal;
+    
+    string private _name = "Abyss Token";
+    string private _symbol = "$ABYSS";
+    uint8 private _decimals = 18;
     
     uint256 public _taxFee = 5;
     uint256 private _previousTaxFee = _taxFee;
@@ -57,16 +56,9 @@ contract ABYSS is Context, IERC20, Ownable {
     */
     uint256 private numTokensSellToAddToLiquidity = 500000 * 10**_decimals;
 
-
-    /* 
-    mapping (address => bool) public AMMPairs;
-
-    address private _presaleAddress;
-    address payable private _marketingWallet;
-    address payable private _teamWallet;
-    address payable private _poolWallet; */
-
-    /////////////////////////////
+    /* AntiBot variables
+    bool public BPEnabled;
+    botProtect BPAddress; */
 
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
     event SwapAndLiquifyEnabledUpdated(bool enabled);
@@ -221,6 +213,16 @@ contract ABYSS is Context, IERC20, Ownable {
         swapAndLiquifyEnabled = _enabled;
         emit SwapAndLiquifyEnabledUpdated(_enabled);
     }
+
+    /*
+    function setBotProtect(bool value) external onlyOwner {
+        BPEnabled = value;
+    }
+
+    function setBotProtection(address _bpAddr) external onlyOwner {
+        BPAddress = botProtect(_bpAddr);
+        BPAddress.setPairAddress(uniswapV2Pair);
+    } */
 
     function reflectionFromToken(uint256 tAmount, bool deductTransferFee) public view returns(uint256) {
         require(tAmount <= _tTotal, "Amount must be less than supply");
