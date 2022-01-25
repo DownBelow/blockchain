@@ -39,31 +39,31 @@ Each distribution corresponds to one VestingSchedule structure.
  * startIndex: When admin releases tokens , it will indicate index of durations which is still vesting period.
  * vestedEnd: When admin releases tokens, it will be set as last vesting time. (UNIX timestamp)
 
-ex- 
-durations
-[
-    0,       // 0 day
-    2678400, // 31 days
-    2419200, // 28 days
-    2678400  // 31 days
-]
-releaseAmounts
-[
-    500000,
-    500000,
-    800000,
-    1200000
-]
-    when token launch date is 2022-01-24, 
-    and you release in 2022-01-25 
-       * startIndex will be 1 
-       * vestedEnd will be 2022-01-24
-       * amountTotal will be 2500000
+<h1>ex- </h1>
+durations <br/>
+[ <br/>
+    0,       // 0 day <br/>
+    2678400, // 31 days <br/>
+    2419200, // 28 days<br/>
+    2678400  // 31 days<br/>
+]<br/>
+releaseAmounts<br/>
+[<br/>
+    500000,<br/>
+    500000,<br/>
+    800000,<br/>
+    1200000<br/>
+]<br/>
+    when token launch date is 2022-01-24, <br/>
+    and you release in 2022-01-25 <br/>
+       * startIndex will be 1 <br/>
+       * vestedEnd will be 2022-01-24<br/>
+       * amountTotal will be 2500000<br/>
 
-    when you release in 2022-03-28
-       * startIndex will be 3
-       * vestedEnd will be 2022-03-24
-       * amountTotal will be 1200000
+    when you release in 2022-03-28<br/>
+       * startIndex will be 3<br/>
+       * vestedEnd will be 2022-03-24<br/>
+       * amountTotal will be 1200000<br/>
 
 - <strong>createVestingSchedule</strong><br/>
 add distribution to VestingScheduleArray
