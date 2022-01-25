@@ -42,35 +42,39 @@ Each distribution corresponds to one VestingSchedule structure.
 <h1>ex- </h1>
 durations <br/>
 [ <br/>
-    0,       // 0 day <br/>
-    2678400, // 31 days <br/>
-    2419200, // 28 days<br/>
-    2678400  // 31 days<br/>
+    &nbsp&nbsp&nbsp0,       // 0 day <br/>
+    &nbsp&nbsp&nbsp2678400, // 31 days <br/>
+    &nbsp&nbsp&nbsp2419200, // 28 days<br/>
+    &nbsp&nbsp&nbsp2678400  // 31 days<br/>
 ]<br/>
 releaseAmounts<br/>
 [<br/>
-    500000,<br/>
-    500000,<br/>
-    800000,<br/>
-    1200000<br/>
+    &nbsp&nbsp&nbsp500000,<br/>
+    &nbsp&nbsp&nbsp500000,<br/>
+    &nbsp&nbsp&nbsp800000,<br/>
+    &nbsp&nbsp&nbsp1200000<br/>
 ]<br/>
-    when token launch date is 2022-01-24, <br/>
-    and you release in 2022-01-25 <br/>
-       * startIndex will be 1 <br/>
-       * vestedEnd will be 2022-01-24<br/>
-       * amountTotal will be 2500000<br/>
+   - when token launch date is 2022-01-24,<br/>
+    and you release in 2022-01-25<br/>
+       &nbsp&nbsp&nbsp* startIndex will be 1<br/>
+       &nbsp&nbsp&nbsp* vestedEnd will be 2022-01-24<br/>
+       &nbsp&nbsp&nbsp* amountTotal will be 2500000<br/>
+       <p></p>
+   - when you release in 2022-03-28<br/>
+       &nbsp&nbsp&nbsp* startIndex will be 3<br/>
+       &nbsp&nbsp&nbsp* vestedEnd will be 2022-03-24<br/>
+       &nbsp&nbsp&nbsp* amountTotal will be 1200000<br/>
 
-    when you release in 2022-03-28<br/>
-       * startIndex will be 3<br/>
-       * vestedEnd will be 2022-03-24<br/>
-       * amountTotal will be 1200000<br/>
-
+<h1>Methods- </h1>
+<p></p>
 - <strong>createVestingSchedule</strong><br/>
-add distribution to VestingScheduleArray
+add distribution to VestingScheduleArray<br/>
+<p></p>
 - <strong>release</strong><br/>
-release vesting amount from all registered distributions.
-Corresponding wallet will receive released amounts.
+release vesting amount from all registered distributions. <br/>
+Corresponding wallet will receive released amounts.<br/>
+<p></p>
 - <strong>revoke</strong><br/>
-Revoke vesting for distribution set as parameter
-   * get releasableamount from contract
-   * set revoke as true
+Revoke vesting for distribution set as parameter <br/>
+   &nbsp&nbsp&nbsp* get releasableamount from contract<br/>
+   &nbsp&nbsp&nbsp* set revoke as true<br/>
