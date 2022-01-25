@@ -106,7 +106,7 @@ contract ABYSSVesting is Trustable, ReentrancyGuard {
         }
     }
 
-    function revoke(uint256 vestingScheduleId) public isTrusted onlyIfVestingScheduleValid(vestingScheduleId) {
+    function revoke(uint256 vestingScheduleId) public nonReentrant isTrusted onlyIfVestingScheduleValid(vestingScheduleId) {
         VestingSchedule storage vestingSchedule = vestingSchedules[vestingScheduleId];
         (uint _releaseAmount,) = _computeReleasableAmount(vestingSchedule);
         if(_releaseAmount != 0) {
