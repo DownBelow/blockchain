@@ -65,12 +65,12 @@ releaseAmounts
        * vestedEnd will be 2022-03-24
        * amountTotal will be 1200000
 
-- createVestingSchedule
+- <strong>createVestingSchedule</strong><br/>
 add distribution to VestingScheduleArray
-- release
+- <strong>release</strong><br/>
 release vesting amount from all registered distributions.
 Corresponding wallet will receive released amounts.
-- revoke
+- <strong>revoke</strong><br/>
 Revoke vesting for distribution set as parameter
    * get releasableamount from contract
    * set revoke as true
