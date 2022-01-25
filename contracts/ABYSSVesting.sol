@@ -28,6 +28,11 @@ contract ABYSSVesting is Trustable, ReentrancyGuard {
     VestingSchedule[] private vestingSchedules;
     uint256 private vestingSchedulesTotalAmount;
 
+    modifier onlyIfVestingScheduleExists(uint256 vestingScheduleId) {
+        require(vestingSchedules[vestingScheduleId].initialized == true);
+        _;
+    }
+
     modifier onlyIfVestingScheduleValid(uint256 vestingScheduleId) {
         require(vestingSchedules[vestingScheduleId].initialized == true
              && !vestingSchedules[vestingScheduleId].revoked
@@ -38,6 +43,10 @@ contract ABYSSVesting is Trustable, ReentrancyGuard {
     constructor(address token_) {
         require(token_ != address(0x0));
         token = IERC20(token_);
+    }
+
+    function setLaunchDate(uint256 _launchDate) external isTrusted {
+        start = _launchDate;
     }
 
     function createVestingSchedule(
@@ -78,6 +87,13 @@ contract ABYSSVesting is Trustable, ReentrancyGuard {
                 vestingSchedule.amountTotal = vestingSchedule.amountTotal - _releaseAmount;
                 if(vestingSchedule.amountTotal == 0) {
                     vestingSchedule.released = true;
+                }
+                else {
+                    uint256 passedVestTime;
+                    for(uint j = vestingSchedule.startIndex; j < _startIndex; j ++)
+                        passedVestTime = passedVestTime + vestingSchedule.durations[j];
+
+                    vestingSchedule.vestedEnd = vestingSchedule.vestedEnd + passedVestTime;
                 }
                 vestingSchedule.startIndex = _startIndex;
                 vestingSchedulesTotalAmount = vestingSchedulesTotalAmount - _releaseAmount;
@@ -125,6 +141,19 @@ contract ABYSSVesting is Trustable, ReentrancyGuard {
         return vestingSchedulesTotalAmount;
     }
 
+    function getVestingSchedule(uint256 vestingScheduleId)
+    public view onlyIfVestingScheduleExists(vestingScheduleId) returns(uint256, bool, bool, uint256, uint256) {
+        VestingSchedule memory vestingSchedule = vestingSchedules[vestingScheduleId];
+        return (vestingSchedule.amountTotal, vestingSchedule.revoked, vestingSchedule.released, vestingSchedule.startIndex, vestingSchedule.vestedEnd);
+    }
+
+    function getLaunchDate()
+    external
+    view 
+    returns(uint256) {
+        return start;
+    }
+
     function _computeReleasableAmount(VestingSchedule memory vestingSchedule)
     internal
     view
@@ -134,7 +163,6 @@ contract ABYSSVesting is Trustable, ReentrancyGuard {
         for(uint i = vestingSchedule.startIndex; i < vestingSchedule.durations.length; i ++) {
             if(getCurrentTime() >= vestingSchedule.durations[i] + vestingSchedule.vestedEnd) {
                 _releaseAmount = _releaseAmount + vestingSchedule.releaseAmounts[i];
-                vestingSchedule.vestedEnd = vestingSchedule.vestedEnd +  vestingSchedule.durations[i];
             }
             else {
                 _startIndex = i;
