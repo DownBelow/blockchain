@@ -8,11 +8,11 @@ describe("ABYSS Token Tests", function() {
     
     [account1] = await ethers.getSigners();
     
-    const abyss = await ethers.getContractFactory("ABYSS");
+    const abyss = await ethers.getContractFactory("ABYSSF");
     ABYSS = await abyss.deploy();
     await ABYSS.deployed();
 
-    const vesting = await ethers.getContractFactory("ABYSSVesting");
+    const vesting = await ethers.getContractFactory("ABYSSVestingF");
     VESTING = await vesting.deploy(ABYSS.address);
     await VESTING.deployed();
   })
@@ -31,7 +31,7 @@ describe("ABYSS Token Tests", function() {
     console.log("after========>", _balance, _totalSupply);
 
     //exclude
-    await ABYSS.connect(account1).excludeFromFee(VESTING.address);
+   // await ABYSS.connect(account1).excludeFromFee(VESTING.address);
 
     //launch date
     //2022 01 25

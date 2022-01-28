@@ -36,10 +36,10 @@ contract ABYSS is Context, IERC20, Trustable {
     string private _symbol = "$ABYSS";
     uint8 private _decimals = 18;
 
-    uint256 public _taxFee = 5;
+    uint256 public _taxFee = 25;
     uint256 private _previousTaxFee = _taxFee;
 
-    uint256 public _liquidityFee = 5;
+    uint256 public _liquidityFee = 25;
     uint256 private _previousLiquidityFee = _liquidityFee;
 
     //Automated Liquidity Acquisition
@@ -47,12 +47,9 @@ contract ABYSS is Context, IERC20, Trustable {
     bool public swapAndLiquifyEnabled = true;
 
     //Uniswap Router,Pair for Liquidity
-    /*
+    
     IUniswapV2Router02 public immutable uniswapV2Router;
     address public immutable uniswapV2Pair;
-    */
-    IUniswapV2Router02 public uniswapV2Router;
-    address public uniswapV2Pair;
 
     uint256 public _maxTxAmount = 5000000 * 10**_decimals;
 
@@ -78,14 +75,16 @@ contract ABYSS is Context, IERC20, Trustable {
 
     constructor ()  {    
         _rOwned[_msgSender()] = _rTotal;
-        // IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F);
+        
+        IUniswapV2Router02 _uniswapV2Router = IUniswapV2Router02(0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F);
+
         // Create a uniswap pair for this new token
-        /* uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
-            .createPair(address(this), _uniswapV2Router.WETH()); */
+        uniswapV2Pair = IUniswapV2Factory(_uniswapV2Router.factory())
+            .createPair(address(this), _uniswapV2Router.WETH());
 
         // set the rest of the contract variables
 
-        // uniswapV2Router = _uniswapV2Router;
+        uniswapV2Router = _uniswapV2Router;
 
         //exclude owner and this contract from fee
         _isExcludedFromFee[owner()] = true;
@@ -333,11 +332,11 @@ contract ABYSS is Context, IERC20, Trustable {
     }
 
     function calculateTaxFee(uint256 _amount) private view returns (uint256) {
-        return _amount * _taxFee / 10**2;
+        return _amount * _taxFee / 10**3;
     }
 
     function calculateLiquidityFee(uint256 _amount) private view returns (uint256) {
-        return _amount * _liquidityFee / 10**2;
+        return _amount * _liquidityFee / 10**3;
     }
 
     function removeAllFee() private {

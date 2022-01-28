@@ -23,8 +23,6 @@ contract ABYSSVesting is Trustable, ReentrancyGuard {
         uint256 vestedEnd;
     }
 
-    uint256 private currentTime;
-
     uint256 private start;
     uint256 private decimals = 18;
     IERC20 immutable private token;
@@ -87,8 +85,6 @@ contract ABYSSVesting is Trustable, ReentrancyGuard {
 
             (uint _releaseAmount, uint _startIndex) = _computeReleasableAmount(vestingSchedule);
 
-            console.log("_releaseAmount===>", _releaseAmount);
-
             if(_releaseAmount != 0) {
                 vestingSchedule.amountTotal = vestingSchedule.amountTotal - _releaseAmount;
                 if(vestingSchedule.amountTotal == 0) {
@@ -130,13 +126,7 @@ contract ABYSSVesting is Trustable, ReentrancyGuard {
         virtual
         view
         returns(uint256) {
-            // return block.timestamp;
-            // return 1643295600;
-            return currentTime;
-    }
-
-    function setCurrentTime(uint256 _currentTime) external isTrusted {
-        currentTime = _currentTime;
+            return block.timestamp;
     }
 
     function getToken()
