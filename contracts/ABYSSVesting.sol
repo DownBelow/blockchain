@@ -99,7 +99,7 @@ contract ABYSSVesting is Trustable, ReentrancyGuard {
                 }
                 vestingSchedule.startIndex = _startIndex;
                 vestingSchedulesTotalAmount = vestingSchedulesTotalAmount - _releaseAmount;
-                token.safeTransfer(vestingSchedule.beneficiary, _releaseAmount);
+                token.safeTransfer(vestingSchedule.beneficiary, _releaseAmount * 10**decimals);
             }
         }
     }
@@ -108,7 +108,7 @@ contract ABYSSVesting is Trustable, ReentrancyGuard {
         VestingSchedule storage vestingSchedule = vestingSchedules[vestingScheduleId];
         (uint _releaseAmount,) = _computeReleasableAmount(vestingSchedule);
         if(_releaseAmount != 0) {
-            token.safeTransfer(vestingSchedule.beneficiary, _releaseAmount);
+            token.safeTransfer(vestingSchedule.beneficiary, _releaseAmount * 10**decimals);
         }
         vestingSchedulesTotalAmount = vestingSchedulesTotalAmount - vestingSchedule.amountTotal;
         vestingSchedule.revoked = true;

@@ -22,6 +22,10 @@ contract ABYSS is Context, IERC20, Trustable {
     mapping (address => bool) private _isExcluded;
     address[] private _excluded;
 
+    string private _name = "Abyss Token";
+    string private _symbol = "$ABYSS";
+    uint8 private _decimals = 18;
+    
     uint256 private initialsupply = 100000000;
 
     uint256 private constant MAX = ~uint256(0);
@@ -31,10 +35,6 @@ contract ABYSS is Context, IERC20, Trustable {
 
     // caluculate TransactionFee total
     uint256 private _tFeeTotal;
-    
-    string private _name = "Abyss Token";
-    string private _symbol = "$ABYSS";
-    uint8 private _decimals = 18;
 
     uint256 public _taxFee = 25;
     uint256 private _previousTaxFee = _taxFee;
