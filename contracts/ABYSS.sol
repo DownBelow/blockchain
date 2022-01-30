@@ -201,15 +201,25 @@ contract ABYSS is Context, IERC20, Trustable {
 
     function setTaxFeePercent(uint256 taxFee) external onlyOwner() {
         _taxFee = taxFee;
+        require(
+            _taxFee + _liquidityFee <= 10**3 / 4,
+            "Total fee is over 25%"
+        );
     }
 
     function setLiquidityFeePercent(uint256 liquidityFee) external onlyOwner() {
         _liquidityFee = liquidityFee;
+        require(
+            _taxFee + _liquidityFee <= 10**3 / 4,
+            "Total fee is over 25%"
+        );
     }
 
     function setMaxTxPercent(uint256 maxTxPercent) external onlyOwner() {
         _maxTxAmount = _tTotal * maxTxPercent / 10**2;
-    }    
+        require(
+               _maxTxAmount >= 5000000 * 10**_decimals, "MaxTxAmount cannot be under 5000000 " );
+    }
 
     function setSwapAndLiquifyEnabled(bool _enabled) public onlyOwner {
         swapAndLiquifyEnabled = _enabled;
