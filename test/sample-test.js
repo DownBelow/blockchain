@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 
 let ABYSS, VESTING;
 
-let vestingStartDate = '2022-02-04';    // This is the vesting start date
+let vestingStartDate = '2022-02-04 00:00:00';    // This is the vesting start date(YYYY-mm-dd hh:mm:ss)
 let vestingSchedule = [
   //Team
   {
@@ -116,15 +116,15 @@ describe("ABYSS Token Tests", function() {
     }
   })
 
-  it("ReleaseDate: 2022-03-05", async function() {
-    let releaseDate = "2022-03-05";
+  it("ReleaseDate: 2022-02-10", async function() {
+    let releaseDate = "2022-02-10";
     [account1] = await ethers.getSigners();
 
     await VESTING.connect(account1).setCurrentTime(getTimeStamp(releaseDate));
     await VESTING.connect(account1).release();
 
     //Team
-    expect (await ABYSS.balanceOf(vestingSchedule[0]['beneficiary'])).to.equal(getBigNumber(720000));
+    expect (await ABYSS.balanceOf(vestingSchedule[0]['beneficiary'])).to.equal(getBigNumber(0));
     //Strategic
     expect (await ABYSS.balanceOf(vestingSchedule[1]['beneficiary'])).to.equal(getBigNumber(3500000));
     //Marketing
