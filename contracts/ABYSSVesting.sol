@@ -122,8 +122,7 @@ contract ABYSSVesting is Trustable, ReentrancyGuard {
     }
 
     function getCurrentTime() 
-        internal
-        virtual
+        public
         view
         returns(uint256) {
             return block.timestamp;
