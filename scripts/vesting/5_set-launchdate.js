@@ -6,7 +6,7 @@ function getTimeStamp(strDate) {
 }
 
 async function main() {
-    let vestingStartDate = "2022-02-08 16:42:00";
+    let vestingStartDate = "2022-02-10 13:00:00";
     const [deployer] = await hre.ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
 
