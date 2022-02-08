@@ -5,9 +5,9 @@ async function main() {
     console.log("Deploying contracts with the account:", deployer.address);
     
     const ABYSS = await hre.ethers.getContractFactory("ABYSS");
-    const address = '0x8da33f73461b04021249f0248b88f1c5a99ce158';   
+    const address = '0x73eC9D20c6a1E8cf34e7E446d76aeb742EB6aE28';   
     //0x73eC9D20c6a1E8cf34e7E446d76aeb742EB6aE28
-    const vesting_address = '0x8101910A78A1E2252112c9658Eed7db71936BDb4';
+    const vesting_address = '0x5959ed1dC9fAb86E80d97A05C6d91c591420A693';
     
     const abyss = await ABYSS.attach(address);
 
