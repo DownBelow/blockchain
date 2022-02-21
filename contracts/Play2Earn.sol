@@ -451,7 +451,8 @@ contract Play2Earn is Pausable, EIP712 {
     address private depositPoolWallet;
 
     uint256 private creditTracking;
-    uint256 private id;
+    uint256 private depositId;
+    uint256 private withdrawId;
 
     event SetAbyssAddress(address indexed newAbyssAddress);
     event Deposit(uint256 id, address from, uint256 amount, uint256 timestamp);
@@ -463,9 +464,9 @@ contract Play2Earn is Pausable, EIP712 {
         address _depositPoolWallet,
         address _withdrawPoolWallet, 
         address _rewardPoolWallet
-    ) EIP712("Abyss", "1") {
-        require(_token != address(0x0));
-        require(_signer != address(0x0));
+    ) EIP712("Play2Earn", "1") {
+        require(_token != address(0x0), "Play2Earn: INVALID_TOKEN_ADDRESS");
+        require(_signer != address(0x0), "Play2Earn: INVALID_ABYSS_SIGNER");
 
         abyss = IERC20(_token);
         abyssSigner = _signer;
@@ -498,23 +499,23 @@ contract Play2Earn is Pausable, EIP712 {
     }
 
     function setAbyssAddress(address _newAbyssAddress) external isTrusted {
-        require(_newAbyssAddress != address(0x0));
+        require(_newAbyssAddress != address(0x0), "Play2Earn: INVALID_NEW_ABYSS_ADDRESS");
         abyss = IERC20(_newAbyssAddress);
         emit SetAbyssAddress(_newAbyssAddress);
     }   
 
     function setDepositPoolWallet(address _newDepositPool) external isTrusted {
-        require(_newDepositPool != address(0x0));
+        require(_newDepositPool != address(0x0), "Play2Earn: INVALID_NEW_DEPOSIT_POOL");
         depositPoolWallet = _newDepositPool;
     }
 
     function setWithdrawPoolWallet(address _newWithdrawPool) external isTrusted {
-        require(_newWithdrawPool != address(0x0));
+        require(_newWithdrawPool != address(0x0), "Play2Earn: INVALID_NEW_WITHDRAW_POOL");
         withdrawPoolWallet = _newWithdrawPool;
     }
 
     function setRewardPoolWallet(address _newRewardPool) external isTrusted {
-        require(_newRewardPool != address(0x0));
+        require(_newRewardPool != address(0x0), "Play2Earn: INVALID_NEW_REWARD_POOL");
         rewardPoolWallet = _newRewardPool;
     }
 
@@ -525,7 +526,7 @@ contract Play2Earn is Pausable, EIP712 {
     function deposit(uint256 amount, uint256 deadline,
         uint8 v, bytes32 r, bytes32 s
     ) external whenNotPaused {
-        require(block.timestamp <= deadline, "INVALID_EXPIRATION");
+        require(block.timestamp <= deadline, "Play2Earn: INVALID_EXPIRATION IN DEPOSIT");
         uint256 currentValidNonce = _nonces[_msgSender()];
 
         bytes32 digest = keccak256(abi.encodePacked(
@@ -533,24 +534,26 @@ contract Play2Earn is Pausable, EIP712 {
                 ECDSA.toTypedDataHash(_domainSeparatorV4(), keccak256(abi.encode(DEPOSIT_TYPEHASH, _msgSender(), amount, currentValidNonce, deadline)))
         ));
 
-        require(abyssSigner == ecrecover(digest, v, r, s), "INVALID_SIGNATURE");   
+        require(abyssSigner == ecrecover(digest, v, r, s), "Play2Earn: INVALID_SIGNATURE IN DEPOSIT");   
 
         _nonces[_msgSender()] = currentValidNonce + 1;
         creditTracking = creditTracking + amount;
-        id = id + 1;
+        depositId = depositId + 1;
         abyss.safeTransferFrom(_msgSender(), depositPoolWallet, amount);
 
-        emit Deposit(id, _msgSender(), amount, getCurrentTime());
+        emit Deposit(depositId, _msgSender(), amount, getCurrentTime());
     }
 
     function withdraw(uint256 amount, uint256 credit, uint256 deadline, 
         uint8 v, bytes32 r, bytes32 s) external whenNotPaused {
-        require(block.timestamp <= deadline, "INVALID_EXPIRATION");
+        require(block.timestamp <= deadline, "Play2Earn: INVALID_EXPIRATION IN WITHDRAW");
+        require(amount <= creditTracking, "Play2Earn: Withdrawal amount exceeds than onchain total credits");
+
         uint256 currentValidNonce = _nonces[_msgSender()];
         
         bytes32 digest = keccak256(abi.encodePacked(
                 "\x19Ethereum Signed Message:\n32",
-                ECDSA.toTypedDataHash(_domainSeparatorV4(), keccak256(abi.encode(DEPOSIT_TYPEHASH, _msgSender(), amount, credit, currentValidNonce, deadline)))
+                ECDSA.toTypedDataHash(_domainSeparatorV4(), keccak256(abi.encode(WITHDRAW_TYPEHASH, _msgSender(), amount, credit, currentValidNonce, deadline)))
         ));
 
         require(abyssSigner == ecrecover(digest, v, r, s), "INVALID_SIGNATURE");   
@@ -559,9 +562,9 @@ contract Play2Earn is Pausable, EIP712 {
 
         _nonces[_msgSender()] = currentValidNonce + 1;   
         creditTracking = creditTracking - amount;
-        id = id + 1;
+        withdrawId = withdrawId + 1;
         abyss.safeTransferFrom(withdrawPoolWallet, _msgSender(), amount);
 
-        emit Withdraw(id, _msgSender(), amount, getCurrentTime());
+        emit Withdraw(withdrawId, _msgSender(), amount, getCurrentTime());
     }
 }
