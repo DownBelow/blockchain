@@ -564,7 +564,7 @@ contract Play2Earn is Pausable, EIP712 {
         creditTracking = creditTracking - amount;
         withdrawId = withdrawId + 1;
         abyss.safeTransferFrom(withdrawPoolWallet, _msgSender(), amount);
-
+        //emit withdraw event
         emit Withdraw(withdrawId, _msgSender(), amount, getCurrentTime());
     }
 }
