@@ -311,6 +311,16 @@ contract Downbelow is Pausable {
         depositPoolWallet = _depositPoolWallet;
         withdrawPoolWallet = _withdrawPoolWallet;
         rewardPoolWallet = _rewardPoolWallet;   
+
+        DOMAIN_SEPARATOR = keccak256(
+            abi.encode(
+                keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
+                keccak256(bytes(domainName)),
+                keccak256(bytes(version)),
+                block.chainid,
+                address(this)
+            )
+        );
     }
 
     function getRewardPoolWallet() public view isTrusted returns(address) {

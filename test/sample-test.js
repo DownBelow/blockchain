@@ -1,153 +1,102 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-let ABYSS, VESTING;
-
-let vestingStartDate = '2022-02-04 00:00:00';    // This is the vesting start date(YYYY-mm-dd hh:mm:ss)
-let vestingSchedule = [
-  //Team
-  {
-    beneficiary: "", 
-    vestingPeriod: [
-      2419200,   // 2022-03-04
-      2678400,   // 2022-04-04
-      2592000,   // 2022-05-04
-      2678400,   // 2022-06-04
-      2592000,   // 2022-07-04
-      2678400,   // 2022-08-04
-      2678400,   // 2022-09-04
-      2592000,   // 2022-10-04
-      2678400,   // 2022-11-04
-      2592000,   // 2022-12-04
-      2678400,   // 2023-01-04
-      2678400   // 2023-02-04
-    ],
-    releaseAmount: [
-      720000, 720000, 720000, 720000,
-      1440000, 1440000, 1440000, 1440000,
-      2340000, 2340000, 2340000, 2340000 
-    ],
-    vestAmount: 18000000
-  },
-  //Strategic Partnerships
-  {
-    beneficiary: "", 
-    vestingPeriod: [
-      0,
-      2419200,   // 2022-03-04
-      2678400,   // 2022-04-04
-      2592000,   // 2022-05-04
-    ],
-    releaseAmount: [
-      1750000, 1750000, 1750000, 1750000
-    ],
-    vestAmount: 7000000
-  },
-  //Marketing
-  {
-    beneficiary: "", 
-    vestingPeriod: [
-      0,
-      2419200,   // 2022-03-04
-      2678400,   // 2022-04-04
-      2592000,   // 2022-05-04
-    ],
-    releaseAmount: [
-      750000, 750000, 750000, 750000
-    ],
-    vestAmount: 3000000
-  },
-  //Investors
-  {
-    beneficiary: "", 
-    vestingPeriod: [
-      0,
-      2419200,   // 2022-03-04
-      2678400,   // 2022-04-04
-      2592000,   // 2022-05-04
-    ],
-    releaseAmount: [
-      500000, 500000, 500000, 500000
-    ],
-    vestAmount: 2000000
-  }
-];
-
-function getTimeStamp(strDate) {
-  const dt = new Date(strDate).getTime();  
-  return dt / 1000;
+let ABYSS, DOWNBELOW;
+let domain = {
+    name: 'Downbelow',
+    version: '1',
+    chainId: 31337,
+    verifyingContract: '0x3CC5A9309f690aA430BF2145537a8eb4337aC617'
 }
+
+const types = {
+    Downbelow: [
+        {name: "account", type: "address"},  
+        {name: "amount", type: "uint256"},
+        {name: "credit", type: "uint256"},
+        {name: "nonce", type: "uint256"},
+        {name: "deadline", type: "uint256"},
+      ]
+};
 
 function getBigNumber(value) {
-  return ethers.utils.parseEther(value.toString());
+    return ethers.utils.parseEther(value.toString());
 }
 
-describe("ABYSS Token Tests", function() {
-  this.beforeEach(async function() {
-    
-    [account1, account2, account3, account4, account5] = await ethers.getSigners();
-    vestingSchedule[0]['beneficiary'] = account2.address;
-    vestingSchedule[1]['beneficiary'] = account3.address;
-    vestingSchedule[2]['beneficiary'] = account4.address;
-    vestingSchedule[3]['beneficiary'] = account5.address;
-    
+describe("Downbelow Tests", function() {
+    this.beforeEach(async function() {
 
-    const abyss = await ethers.getContractFactory("ABYSSF");
-    ABYSS = await abyss.deploy();
-    await ABYSS.deployed();
+        [account1, account2, account3, account4, account5] = await ethers.getSigners();
 
-    const vesting = await ethers.getContractFactory("ABYSSVestingF");
-    VESTING = await vesting.deploy(ABYSS.address);
-    await VESTING.deployed();
+        const abyss = await ethers.getContractFactory("ABYSSF");      
+        ABYSS = await abyss.deploy();
+        await ABYSS.deployed();
 
-    //exclude
-    await ABYSS.connect(account1).excludeFromFee(VESTING.address);
-    await ABYSS.connect(account1).setMaxTxPercent(30);
+        const downbelow = await ethers.getContractFactory("Downbelow");
+        DOWNBELOW = await downbelow.deploy(
+            ABYSS.address,
+            account1.address, //signer
+            account2.address, //depositPoolWallet
+            account3.address, //withdrawPoolWallet
+            account4.address  //rewardPoolWallet
+        );
 
-    let vestingTotalAmount = 30000000;
-    await ABYSS.connect(account1).transfer(VESTING.address, getBigNumber(vestingTotalAmount));
+        await DOWNBELOW.deployed();
 
-    await VESTING.connect(account1).setLaunchDate(getTimeStamp(vestingStartDate));
+        console.log("DOWNBELOW deployed:", DOWNBELOW.address);
 
-    for(let i = 0; i < vestingSchedule.length; i ++) {
-      await VESTING.connect(account1).createVestingSchedule(vestingSchedule[i]['beneficiary'], vestingSchedule[i]['vestAmount'],
-      vestingSchedule[i]['vestingPeriod'], 
-      vestingSchedule[i]['releaseAmount']); 
-    }
-  })
+        domain.verifyingContract = DOWNBELOW.address;
+    })
 
-  it("ReleaseDate: 2022-02-10", async function() {
-    let releaseDate = "2022-02-10";
-    [account1] = await ethers.getSigners();
+    it("Deposit_Withdraw", async function() {
+        [account1, account2, account3, account4, account5] = await ethers.getSigners();
 
-    await VESTING.connect(account1).setCurrentTime(getTimeStamp(releaseDate));
-    await VESTING.connect(account1).release();
+        //account5: transfer to user
+        await ABYSS.connect(account1).transfer(account5.address, getBigNumber(200000));
+        //withdraw: transfer to withdrawWallet
+        await ABYSS.connect(account1).transfer(account3.address, getBigNumber(1200000));
 
-    //Team
-    expect (await ABYSS.balanceOf(vestingSchedule[0]['beneficiary'])).to.equal(getBigNumber(0));
-    //Strategic
-    expect (await ABYSS.balanceOf(vestingSchedule[1]['beneficiary'])).to.equal(getBigNumber(3500000));
-    //Marketing
-    expect (await ABYSS.balanceOf(vestingSchedule[2]['beneficiary'])).to.equal(getBigNumber(1500000));
-    //Investors
-    expect (await ABYSS.balanceOf(vestingSchedule[3]['beneficiary'])).to.equal(getBigNumber(1000000));
-  })
+        //exclude fee
+        await ABYSS.connect(account1).excludeFromFee(account2.address);
+        await ABYSS.connect(account1).excludeFromFee(account3.address);
 
+        //approve
+        await ABYSS.connect(account5).approve(DOWNBELOW.address, getBigNumber(200000));
+        await ABYSS.connect(account3).approve(DOWNBELOW.address, getBigNumber(1200000));
 
-  it("ReleaseDate: 2022-04-12", async function() {
-    let releaseDate = "2022-04-12";
-    [account1] = await ethers.getSigners();
+        //deposit
+        let value = {
+            account: account5.address,
+            amount: getBigNumber(2000),
+            credit: 0,
+            nonce: 0,
+            deadline: 1685499796 
+        };
+        let signature = await account1._signTypedData(domain, types, value);
+        const { r, s, v } = ethers.utils.splitSignature(signature);
 
-    await VESTING.connect(account1).setCurrentTime(getTimeStamp(releaseDate));
-    await VESTING.connect(account1).release();
+        await DOWNBELOW.connect(account5).deposit(getBigNumber(2000), 1685499796, v, r, s);
 
-    //Team
-    expect (await ABYSS.balanceOf(vestingSchedule[0]['beneficiary'])).to.equal(getBigNumber(1440000));
-    //Strategic
-    expect (await ABYSS.balanceOf(vestingSchedule[1]['beneficiary'])).to.equal(getBigNumber(5250000));
-    //Marketing
-    expect (await ABYSS.balanceOf(vestingSchedule[2]['beneficiary'])).to.equal(getBigNumber(2250000));
-    //Investors
-    expect (await ABYSS.balanceOf(vestingSchedule[3]['beneficiary'])).to.equal(getBigNumber(1500000));
-  })
-});
+        //after deposit
+        console.log("=====================after deposit=======================");
+        console.log("user balance: ", (await ABYSS.balanceOf(account5.address)));
+        console.log("depositPoolWallet balance: ", (await ABYSS.balanceOf(account2.address)));
+
+        //withdraw
+        value = {
+            account: account5.address,
+            amount: getBigNumber(1000),
+            credit: getBigNumber(2000),
+            nonce: 1,
+            deadline: 1685499796 
+        };
+        let signature1 = await account1._signTypedData(domain, types, value);
+        let split_data = ethers.utils.splitSignature(signature1);
+        await DOWNBELOW.connect(account5).withdraw(getBigNumber(1000), getBigNumber(2000), 1685499796, split_data.v, split_data.r, split_data.s);
+
+        //after withdraw
+        console.log("=====================after withdraw=======================");
+        console.log("user balance: ", (await ABYSS.balanceOf(account5.address)));
+        console.log("withdrawPoolWallet balance: ", (await ABYSS.balanceOf(account3.address)));
+    })
+})
