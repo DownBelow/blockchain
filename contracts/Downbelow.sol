@@ -26,15 +26,15 @@ library Address {
     }
 
     function sendValue(address payable recipient, uint256 amount) internal {
-        require(address(this).balance >= amount, "Address: insufficient balance");
+        require(address(this).balance >= amount, "Downbelow(Address): insufficient balance");
 
         // solhint-disable-next-line avoid-low-level-calls, avoid-call-value
         (bool success, ) = recipient.call{ value: amount }("");
-        require(success, "Address: unable to send value, recipient may have reverted");
+        require(success, "Downbelow(Address): unable to send value, recipient may have reverted");
     }
 
     function functionCall(address target, bytes memory data) internal returns (bytes memory) {
-      return functionCall(target, data, "Address: low-level call failed");
+      return functionCall(target, data, "Downbelow(Address): low-level call failed");
     }
 
     function functionCall(address target, bytes memory data, string memory errorMessage) internal returns (bytes memory) {
@@ -42,16 +42,16 @@ library Address {
     }
 
     function functionCallWithValue(address target, bytes memory data, uint256 value) internal returns (bytes memory) {
-        return functionCallWithValue(target, data, value, "Address: low-level call with value failed");
+        return functionCallWithValue(target, data, value, "Downbelow(Address): low-level call with value failed");
     }
 
     function functionCallWithValue(address target, bytes memory data, uint256 value, string memory errorMessage) internal returns (bytes memory) {
-        require(address(this).balance >= value, "Address: insufficient balance for call");
+        require(address(this).balance >= value, "Downbelow(Address): insufficient balance for call");
         return _functionCallWithValue(target, data, value, errorMessage);
     }
 
     function _functionCallWithValue(address target, bytes memory data, uint256 weiValue, string memory errorMessage) private returns (bytes memory) {
-        require(isContract(target), "Address: call to non-contract");
+        require(isContract(target), "Downbelow(Address): call to non-contract");
 
         // solhint-disable-next-line avoid-low-level-calls
         (bool success, bytes memory returndata) = target.call{ value: weiValue }(data);
@@ -104,7 +104,7 @@ library SafeERC20 {
         // 'safeIncreaseAllowance' and 'safeDecreaseAllowance'
         require(
             (value == 0) || (token.allowance(address(this), spender) == 0),
-            "SafeERC20: approve from non-zero to non-zero allowance"
+            "Downbelow(SafeERC20): approve from non-zero to non-zero allowance"
         );
         _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, value));
     }
@@ -125,7 +125,7 @@ library SafeERC20 {
     ) internal {
         unchecked {
             uint256 oldAllowance = token.allowance(address(this), spender);
-            require(oldAllowance >= value, "SafeERC20: decreased allowance below zero");
+            require(oldAllowance >= value, "Downbelow(SafeERC20): decreased allowance below zero");
             uint256 newAllowance = oldAllowance - value;
             _callOptionalReturn(token, abi.encodeWithSelector(token.approve.selector, spender, newAllowance));
         }
@@ -136,10 +136,10 @@ library SafeERC20 {
         // we're implementing it ourselves. We use {Address.functionCall} to perform this call, which verifies that
         // the target address contains contract code and also asserts for success in the low-level call.
 
-        bytes memory returndata = address(token).functionCall(data, "SafeERC20: low-level call failed");
+        bytes memory returndata = address(token).functionCall(data, "Downbelow(SafeERC20): low-level call failed");
         if (returndata.length > 0) {
             // Return data is optional
-            require(abi.decode(returndata, (bool)), "SafeERC20: ERC20 operation did not succeed");
+            require(abi.decode(returndata, (bool)), "Downbelow(SafeERC20): ERC20 operation did not succeed");
         }
     }
 }
@@ -187,182 +187,9 @@ library Strings {
             buffer[i] = _HEX_SYMBOLS[value & 0xf];
             value >>= 4;
         }
-        require(value == 0, "Strings: hex length insufficient");
+        require(value == 0, "Downbelow(Strings): hex length insufficient");
         return string(buffer);
     }    
-}
-
-library ECDSA {
-    enum RecoverError {
-        NoError,
-        InvalidSignature,
-        InvalidSignatureLength,
-        InvalidSignatureS,
-        InvalidSignatureV
-    }
-
-    function _throwError(RecoverError error) private pure {
-        if (error == RecoverError.NoError) {
-            return; // no error: do nothing
-        } else if (error == RecoverError.InvalidSignature) {
-            revert("ECDSA: invalid signature");
-        } else if (error == RecoverError.InvalidSignatureLength) {
-            revert("ECDSA: invalid signature length");
-        } else if (error == RecoverError.InvalidSignatureS) {
-            revert("ECDSA: invalid signature 's' value");
-        } else if (error == RecoverError.InvalidSignatureV) {
-            revert("ECDSA: invalid signature 'v' value");
-        }
-    }
-
-    function tryRecover(bytes32 hash, bytes memory signature) internal pure returns (address, RecoverError) {
-        if (signature.length == 65) {
-            bytes32 r;
-            bytes32 s;
-            uint8 v;
-            
-            assembly {
-                r := mload(add(signature, 0x20))
-                s := mload(add(signature, 0x40))
-                v := byte(0, mload(add(signature, 0x60)))
-            }
-            return tryRecover(hash, v, r, s);
-        } else if (signature.length == 64) {
-            bytes32 r;
-            bytes32 vs;
-            
-            assembly {
-                r := mload(add(signature, 0x20))
-                vs := mload(add(signature, 0x40))
-            }
-            return tryRecover(hash, r, vs);
-        } else {
-            return (address(0), RecoverError.InvalidSignatureLength);
-        }
-    }
-
-    function recover(bytes32 hash, bytes memory signature) internal pure returns (address) {
-        (address recovered, RecoverError error) = tryRecover(hash, signature);
-        _throwError(error);
-        return recovered;
-    }
-
-    function tryRecover(
-        bytes32 hash,
-        bytes32 r,
-        bytes32 vs
-    ) internal pure returns (address, RecoverError) {
-        bytes32 s;
-        uint8 v;
-        assembly {
-            s := and(vs, 0x7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff)
-            v := add(shr(255, vs), 27)
-        }
-        return tryRecover(hash, v, r, s);
-    }
-
-    function recover(
-        bytes32 hash,
-        bytes32 r,
-        bytes32 vs
-    ) internal pure returns (address) {
-        (address recovered, RecoverError error) = tryRecover(hash, r, vs);
-        _throwError(error);
-        return recovered;
-    }
-
-    function tryRecover(
-        bytes32 hash,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) internal pure returns (address, RecoverError) {
-        if (uint256(s) > 0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0) {
-            return (address(0), RecoverError.InvalidSignatureS);
-        }
-        if (v != 27 && v != 28) {
-            return (address(0), RecoverError.InvalidSignatureV);
-        }
-
-        address signer = ecrecover(hash, v, r, s);
-        if (signer == address(0)) {
-            return (address(0), RecoverError.InvalidSignature);
-        }
-
-        return (signer, RecoverError.NoError);
-    }
-
-    function recover(
-        bytes32 hash,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) internal pure returns (address) {
-        (address recovered, RecoverError error) = tryRecover(hash, v, r, s);
-        _throwError(error);
-        return recovered;
-    }
-
-    function toEthSignedMessageHash(bytes32 hash) internal pure returns (bytes32) {
-        // 32 is the length in bytes of hash,
-        // enforced by the type signature above
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
-    }
-
-    function toEthSignedMessageHash(bytes memory s) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n", Strings.toString(s.length), s));
-    }
-
-    function toTypedDataHash(bytes32 domainSeparator, bytes32 structHash) internal pure returns (bytes32) {
-        return keccak256(abi.encodePacked("\x19\x01", domainSeparator, structHash));
-    }
-}
-
-abstract contract EIP712 {
-    bytes32 private immutable _CACHED_DOMAIN_SEPARATOR;
-    uint256 private immutable _CACHED_CHAIN_ID;
-    address private immutable _CACHED_THIS;
-
-    bytes32 private immutable _HASHED_NAME;
-    bytes32 private immutable _HASHED_VERSION;
-    bytes32 private immutable _TYPE_HASH;
-
-    constructor(string memory name, string memory version) {
-        bytes32 hashedName = keccak256(bytes(name));
-        bytes32 hashedVersion = keccak256(bytes(version));
-        bytes32 typeHash = keccak256(
-            "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
-        );
-        _HASHED_NAME = hashedName;
-        _HASHED_VERSION = hashedVersion;
-        _CACHED_CHAIN_ID = block.chainid;
-        _CACHED_DOMAIN_SEPARATOR = _buildDomainSeparator(typeHash, hashedName, hashedVersion);
-        _CACHED_THIS = address(this);
-        _TYPE_HASH = typeHash;
-    }
-
-    /**
-     * @dev Returns the domain separator for the current chain.
-     */
-    function _domainSeparatorV4() internal view returns (bytes32) {
-        if (address(this) == _CACHED_THIS && block.chainid == _CACHED_CHAIN_ID) {
-            return _CACHED_DOMAIN_SEPARATOR;
-        } else {
-            return _buildDomainSeparator(_TYPE_HASH, _HASHED_NAME, _HASHED_VERSION);
-        }
-    }
-
-    function _buildDomainSeparator(
-        bytes32 typeHash,
-        bytes32 nameHash,
-        bytes32 versionHash
-    ) private view returns (bytes32) {
-        return keccak256(abi.encode(typeHash, nameHash, versionHash, block.chainid, address(this)));
-    }
-
-    function _hashTypedDataV4(bytes32 structHash) internal view virtual returns (bytes32) {
-        return ECDSA.toTypedDataHash(_domainSeparatorV4(), structHash);
-    }
 }
 
 abstract contract Context {
@@ -389,7 +216,7 @@ contract Trustable is Context {
     }
 
     modifier onlyOwner {
-        require(_owner == _msgSender(), "Caller is not the owner");
+        require(_owner == _msgSender(), "Downbelow(Trustable): Caller is not the owner");
         _;
     }
 
@@ -399,7 +226,7 @@ contract Trustable is Context {
     }
 
     function transferOwnership(address newOwner) public virtual onlyOwner {
-        require(newOwner != address(0), "New owner is the zero address");
+        require(newOwner != address(0), "Downbelow(Trustable): New owner is the zero address");
         _owner = newOwner;
     }
 
@@ -426,31 +253,42 @@ contract Pausable is Trustable {
     }
 
     function pause() public onlyOwner whenNotPaused {
-        paused = true;
+        _pause();
     }
 
     function unpause() public onlyOwner whenPaused {
+        _unpause();
+    }
+
+    function _pause() internal {
+        paused = true;
+    }
+
+    function _unpause() internal {
         paused = false;
     }
 }
 
-contract Play2Earn is Pausable, EIP712 {
+contract Downbelow is Pausable {
     using SafeERC20 for IERC20;
-
-    uint256 private decimals = 18; // same as abyss decimal
+    
     IERC20 private abyss;  // abyss address   
 
-    address private abyssSigner;
+    bytes32 public DOMAIN_SEPARATOR;
+    string constant public domainName = "Downbelow";
+    string constant public version = "1";    
+
+    address private downbelowSigner;            // admin public key
     mapping (address => uint256) public _nonces;
 
-    bytes32 constant public DEPOSIT_TYPEHASH = keccak256("deposit(address account,uint256 amount,uint256 nonce,uint256 deadline)");
-    bytes32 constant public WITHDRAW_TYPEHASH = keccak256("withdraw(address account,uint256 amount,uint256 credit,uint256 nonce,uint256 deadline)");
+    bytes32 constant public DOWNBELOW_TYPEHASH = keccak256("Downbelow(address account,uint256 amount,uint256 credit,uint256 nonce,uint256 deadline)");
 
+    // Deposit/Withdraw pools
     address private rewardPoolWallet;
     address private withdrawPoolWallet;
     address private depositPoolWallet;
 
-    uint256 private creditTracking;
+    uint256 private creditTracking = 40000000; // just example value
     uint256 private depositId;
     uint256 private withdrawId;
 
@@ -464,12 +302,12 @@ contract Play2Earn is Pausable, EIP712 {
         address _depositPoolWallet,
         address _withdrawPoolWallet, 
         address _rewardPoolWallet
-    ) EIP712("Play2Earn", "1") {
-        require(_token != address(0x0), "Play2Earn: INVALID_TOKEN_ADDRESS");
-        require(_signer != address(0x0), "Play2Earn: INVALID_ABYSS_SIGNER");
+    ) {
+        require(_token != address(0x0), "Downbelow: INVALID_TOKEN_ADDRESS");
+        require(_signer != address(0x0), "Downbelow: INVALID_ABYSS_SIGNER");
 
         abyss = IERC20(_token);
-        abyssSigner = _signer;
+        downbelowSigner = _signer;
         depositPoolWallet = _depositPoolWallet;
         withdrawPoolWallet = _withdrawPoolWallet;
         rewardPoolWallet = _rewardPoolWallet;   
@@ -499,45 +337,48 @@ contract Play2Earn is Pausable, EIP712 {
     }
 
     function setAbyssAddress(address _newAbyssAddress) external isTrusted {
-        require(_newAbyssAddress != address(0x0), "Play2Earn: INVALID_NEW_ABYSS_ADDRESS");
+        require(_newAbyssAddress != address(0x0), "Downbelow: INVALID_NEW_ABYSS_ADDRESS");
         abyss = IERC20(_newAbyssAddress);
         emit SetAbyssAddress(_newAbyssAddress);
     }   
 
     function setDepositPoolWallet(address _newDepositPool) external isTrusted {
-        require(_newDepositPool != address(0x0), "Play2Earn: INVALID_NEW_DEPOSIT_POOL");
+        require(_newDepositPool != address(0x0), "Downbelow: INVALID_NEW_DEPOSIT_POOL");
         depositPoolWallet = _newDepositPool;
     }
 
     function setWithdrawPoolWallet(address _newWithdrawPool) external isTrusted {
-        require(_newWithdrawPool != address(0x0), "Play2Earn: INVALID_NEW_WITHDRAW_POOL");
+        require(_newWithdrawPool != address(0x0), "Downbelow: INVALID_NEW_WITHDRAW_POOL");
         withdrawPoolWallet = _newWithdrawPool;
     }
 
     function setRewardPoolWallet(address _newRewardPool) external isTrusted {
-        require(_newRewardPool != address(0x0), "Play2Earn: INVALID_NEW_REWARD_POOL");
+        require(_newRewardPool != address(0x0), "Downbelow: INVALID_NEW_REWARD_POOL");
         rewardPoolWallet = _newRewardPool;
     }
 
-    function updateIHTCTracking(uint256 _creditTracking) external isTrusted {
+    function updateCreditTracking(uint256 _creditTracking) external isTrusted {
         creditTracking = _creditTracking;
     }
 
     function deposit(uint256 amount, uint256 deadline,
         uint8 v, bytes32 r, bytes32 s
     ) external whenNotPaused {
-        require(block.timestamp <= deadline, "Play2Earn: INVALID_EXPIRATION IN DEPOSIT");
+        require(block.timestamp <= deadline, "Downbelow: INVALID_EXPIRATION IN DEPOSIT");
         uint256 currentValidNonce = _nonces[_msgSender()];
 
-        bytes32 digest = keccak256(abi.encodePacked(
-                "\x19Ethereum Signed Message:\n32",
-                ECDSA.toTypedDataHash(_domainSeparatorV4(), keccak256(abi.encode(DEPOSIT_TYPEHASH, _msgSender(), amount, currentValidNonce, deadline)))
-        ));
-
-        require(abyssSigner == ecrecover(digest, v, r, s), "Play2Earn: INVALID_SIGNATURE IN DEPOSIT");   
+        bytes32 digest = keccak256(
+            abi.encodePacked(
+                '\x19\x01',
+                DOMAIN_SEPARATOR,
+                keccak256(abi.encode(DOWNBELOW_TYPEHASH, _msgSender(), amount, 0, currentValidNonce, deadline))
+            )
+        );
+        
+        require(downbelowSigner == ecrecover(digest, v, r, s), "Downbelow: INVALID_SIGNATURE IN DEPOSIT");
 
         _nonces[_msgSender()] = currentValidNonce + 1;
-        creditTracking = creditTracking + amount;
+        creditTracking = creditTracking + amount;           // remove temporary if daily payout' implementation is failed
         depositId = depositId + 1;
         abyss.safeTransferFrom(_msgSender(), depositPoolWallet, amount);
 
@@ -546,25 +387,27 @@ contract Play2Earn is Pausable, EIP712 {
 
     function withdraw(uint256 amount, uint256 credit, uint256 deadline, 
         uint8 v, bytes32 r, bytes32 s) external whenNotPaused {
-        require(block.timestamp <= deadline, "Play2Earn: INVALID_EXPIRATION IN WITHDRAW");
-        require(amount <= creditTracking, "Play2Earn: Withdrawal amount exceeds than onchain total credits");
+        require(block.timestamp <= deadline, "Downbelow: INVALID_EXPIRATION IN WITHDRAW");
+        require(amount <= creditTracking, "Downbelow: Withdrawal amount exceeds than onchain total credits");   // remove temporary if daily payout' implementation is failed
 
         uint256 currentValidNonce = _nonces[_msgSender()];
-        
-        bytes32 digest = keccak256(abi.encodePacked(
-                "\x19Ethereum Signed Message:\n32",
-                ECDSA.toTypedDataHash(_domainSeparatorV4(), keccak256(abi.encode(WITHDRAW_TYPEHASH, _msgSender(), amount, credit, currentValidNonce, deadline)))
-        ));
 
-        require(abyssSigner == ecrecover(digest, v, r, s), "INVALID_SIGNATURE");   
+        bytes32 digest = keccak256(
+            abi.encodePacked(
+                '\x19\x01',
+                DOMAIN_SEPARATOR,
+                keccak256(abi.encode(DOWNBELOW_TYPEHASH, _msgSender(), amount, credit, currentValidNonce, deadline))
+            )
+        );
 
-        require(amount <= credit, "Withdrawal amount exceeds than your credit");
+        require(downbelowSigner == ecrecover(digest, v, r, s), "Downbelow: INVALID_SIGNATURE IN WITHDRAW");   
+        require(amount <= credit, "Downbelow: Withdrawal amount exceeds than your credit");
 
         _nonces[_msgSender()] = currentValidNonce + 1;   
-        creditTracking = creditTracking - amount;
+        creditTracking = creditTracking - amount;               // remove temporary if daily payout' implementation is failed
         withdrawId = withdrawId + 1;
         abyss.safeTransferFrom(withdrawPoolWallet, _msgSender(), amount);
-        //emit withdraw event
+
         emit Withdraw(withdrawId, _msgSender(), amount, getCurrentTime());
     }
 }
